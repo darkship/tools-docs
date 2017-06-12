@@ -32,3 +32,25 @@ import { addErrorLoggingToSchema } from 'graphql-tools';
 const logger = { log: (e) => console.error(e.stack) };
 addErrorLoggingToSchema(mySchema, logger);
 ```
+<h3 id="formatError" title="formatError">formatError</h3>
+
+```js
+import {graphqlKoa} from 'graphql-server-koa';
+import Router from 'koa-router';
+import schema from './my_schema.js';
+import logger from './my_logger.js';
+
+const router = new Router();
+router.post('/graphql', graphqlKoa((ctx) => {
+  return {
+    // -> deactivate console.error in graphql-server
+    // https://github.com/apollographql/graphql-server/blob/c05c1761c5a1a749482128604f607d2420b76be1/packages/graphql-server-core/src/runQuery.ts#L142
+    debug: false, 
+    schema,
+    formatError: (err) => {
+      logger.error(err); // -> my custom logger
+      return new Error('Kaboom'); // -> Returns error to client
+    }
+  }
+}));
+```
